@@ -1,8 +1,7 @@
 package com.example.floodmonitor.controller;
 
 import com.example.floodmonitor.model.Station;
-import com.example.floodmonitor.service.SimulationService;
-
+import com.example.floodmonitor.service.StationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,21 +14,23 @@ import java.util.List;
 @RequestMapping("/api/v1")
 public class StationController {
 
-    private final SimulationService simulationService;
+    private final StationService stationService;
 
-    public StationController(SimulationService simulationService) {
-        this.simulationService = simulationService;
+    public StationController(StationService stationService) {
+        this.stationService = stationService;
     }
 
     @GetMapping("/stations")
     public List<Station> getStations() {
-        return simulationService.generateStations();
+        return stationService.getAllStations();
     }
 
-    @GetMapping("/stations/{id}")
-    public ResponseEntity<Station> getStationById(@PathVariable String id) {
-        return simulationService.getStationById(id)
-            .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+    @GetMapping("/stations/{stationId}")
+    public ResponseEntity<Station> getStation(@PathVariable String stationId) {
+        Station station = stationService.getStation(stationId);
+        if (station == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(station);
     }
 }
