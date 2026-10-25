@@ -18,17 +18,17 @@ public class SimulationService {
 
     private final StationRepository stationRepository;
     private final MeasurementRepository measurementRepository;
-    private final WarningService warningService;
+    private final StationService stationService;
     private final Random random = new Random();
 
     @Value("${simulation.enabled:true}")
     private boolean enabled;
 
     public SimulationService(StationRepository stationRepository, MeasurementRepository measurementRepository,
-                             WarningService warningService) {
+                             StationService stationService) {
         this.stationRepository = stationRepository;
         this.measurementRepository = measurementRepository;
-        this.warningService = warningService;
+        this.stationService = stationService;
     }
 
     // wird automatisch alle "simulation.interval" Millisekunden aufgerufen
@@ -123,7 +123,7 @@ public class SimulationService {
         );
 
         // Warnstufe wird am Server berechnet
-        measurement.setWarningLevel(warningService.calculateWarningLevel(station, measurement));
+        measurement.setWarningLevel(stationService.calculateWarningLevel(station, measurement));
 
         return measurement;
     }
