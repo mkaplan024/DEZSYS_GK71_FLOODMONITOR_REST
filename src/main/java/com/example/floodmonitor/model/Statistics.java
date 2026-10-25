@@ -1,5 +1,8 @@
 package com.example.floodmonitor.model;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+
+@JacksonXmlRootElement(localName = "statistics")
 public class Statistics {
 
     private String stationId;

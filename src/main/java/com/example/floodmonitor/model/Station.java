@@ -1,7 +1,9 @@
 package com.example.floodmonitor.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
+@JacksonXmlRootElement(localName = "station")
 public class Station {
 
     private String id;

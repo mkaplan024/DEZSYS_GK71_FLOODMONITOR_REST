@@ -1,7 +1,10 @@
 package com.example.floodmonitor.model;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+
 import java.time.Instant;
 
+@JacksonXmlRootElement(localName = "measurement")
 public class Measurement {
 
     private String stationId;

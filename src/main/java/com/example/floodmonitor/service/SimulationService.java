@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Random;
 
 @Service
@@ -112,7 +113,7 @@ public class SimulationService {
 
         Measurement measurement = new Measurement(
                 station.getId(),
-                Instant.now(),
+                Instant.now().truncatedTo(ChronoUnit.SECONDS), // ohne Nanosekunden
                 round(waterLevel),
                 round(flowRate),
                 round(rainfall),
