@@ -18,14 +18,17 @@ public class SimulationService {
 
     private final StationRepository stationRepository;
     private final MeasurementRepository measurementRepository;
+    private final WarningService warningService;
     private final Random random = new Random();
 
     @Value("${simulation.enabled:true}")
     private boolean enabled;
 
-    public SimulationService(StationRepository stationRepository, MeasurementRepository measurementRepository) {
+    public SimulationService(StationRepository stationRepository, MeasurementRepository measurementRepository,
+                             WarningService warningService) {
         this.stationRepository = stationRepository;
         this.measurementRepository = measurementRepository;
+        this.warningService = warningService;
     }
 
     // wird automatisch alle "simulation.interval" Millisekunden aufgerufen
@@ -50,7 +53,8 @@ public class SimulationService {
                     + " cm, Regen=" + measurement.getRainfall()
                     + " mm/h, Durchfluss=" + measurement.getFlowRate()
                     + " m3/s, Akku=" + measurement.getBatteryLevel()
-                    + " %, Status=" + measurement.getStatus());
+                    + " %, Status=" + measurement.getStatus()
+                    + ", Warnstufe=" + measurement.getWarningLevel());
         }
     }
 
@@ -106,7 +110,7 @@ public class SimulationService {
         // höherer Wasserstand -> höhere Durchflussmenge
         double flowRate = waterLevel * 2.5;
 
-        return new Measurement(
+        Measurement measurement = new Measurement(
                 station.getId(),
                 Instant.now(),
                 round(waterLevel),
@@ -115,8 +119,13 @@ public class SimulationService {
                 round(temperature),
                 batteryLevel,
                 station.getStatus(),
-                WarningLevel.UNKNOWN // wird in Punkt 3 berechnet
+                WarningLevel.UNKNOWN
         );
+
+        // Warnstufe wird am Server berechnet
+        measurement.setWarningLevel(warningService.calculateWarningLevel(station, measurement));
+
+        return measurement;
     }
 
     private double round(double value) {
