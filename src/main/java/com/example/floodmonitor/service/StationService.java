@@ -17,6 +17,8 @@ import java.util.List;
 @Service
 public class StationService {
 
+    public static final int MAX_LIMIT = 1000;
+
     private final StationRepository stationRepository;
     private final MeasurementRepository measurementRepository;
 
@@ -104,7 +106,23 @@ public class StationService {
     // historische Messwerte, neueste zuerst
     public List<Measurement> getMeasurements(String stationId, Instant from, Instant to,
                                              int limit, WarningLevel warningLevel) {
+        if (limit < 1) {
+            throw new IllegalArgumentException("limit muss mindestens 1 sein");
+        }
+        if (limit > MAX_LIMIT) {
+            throw new IllegalArgumentException("limit darf maximal " + MAX_LIMIT + " sein");
+        }
+
+        return filterMeasurements(stationId, from, to, limit, warningLevel);
+    }
+
+    private List<Measurement> filterMeasurements(String stationId, Instant from, Instant to,
+                                                 int limit, WarningLevel warningLevel) {
         getStation(stationId);
+
+        if (from != null && to != null && from.isAfter(to)) {
+            throw new IllegalArgumentException("Ungültiger Zeitraum: from darf nicht nach to liegen");
+        }
 
         List<Measurement> all = measurementRepository.findByStationId(stationId);
         List<Measurement> result = new ArrayList<>();
@@ -136,7 +154,8 @@ public class StationService {
     // ---------- Statistik ----------
 
     public Statistics getStatistics(String stationId, Instant from, Instant to) {
-        List<Measurement> list = getMeasurements(stationId, from, to, Integer.MAX_VALUE, null);
+        // für die Statistik alle Messungen im Zeitraum verwenden (kein limit)
+        List<Measurement> list = filterMeasurements(stationId, from, to, Integer.MAX_VALUE, null);
 
         Statistics statistics = new Statistics();
         statistics.setStationId(stationId);
