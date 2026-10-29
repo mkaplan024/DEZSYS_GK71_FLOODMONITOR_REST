@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Flood Monitor</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="app.js"></script>
+</head>
+<body>
+
+<h1>Flood Monitor</h1>
+
+<p>
+    Station: <select id="station"></select>
+    &nbsp;&nbsp;
+    Format:
+    <input type="radio" name="format" value="json" checked> JSON
+    <input type="radio" name="format" value="xml"> XML
+    &nbsp;&nbsp;
+    <input type="checkbox" id="autoRefresh" checked> automatisch aktualisieren
+</p>
+
+<p id="loading">Daten werden geladen...</p>
+<p id="error"></p>
+
+<h2>Aktueller Messwert</h2>
+<div id="latest"></div>
+
+<h2>Historische Messwerte</h2>
+<p>
+    Von: <input type="datetime-local" id="from">
+    Bis: <input type="datetime-local" id="to">
+    Warnstufe:
+    <select id="warningLevel">
+        <option value="">alle</option>
+        <option value="NORMAL">NORMAL</option>
+        <option value="WARNING">WARNING</option>
+        <option value="CRITICAL">CRITICAL</option>
+        <option value="UNKNOWN">UNKNOWN</option>
+    </select>
+    Anzahl: <input type="number" id="limit" value="20" style="width: 60px">
+    <button id="filter">Filtern</button>
+</p>
+
+<table>
+    <thead>
+    <tr>
+        <th>Station</th>
+        <th>Zeitpunkt</th>
+        <th>Wasserstand (cm)</th>
+        <th>Durchfluss (m³/s)</th>
+        <th>Niederschlag (mm/h)</th>
+        <th>Akku (%)</th>
+        <th>Status</th>
+        <th>Warnstufe</th>
+    </tr>
+    </thead>
+    <tbody id="measurements"></tbody>
+</table>
+
+</body>
+</html>

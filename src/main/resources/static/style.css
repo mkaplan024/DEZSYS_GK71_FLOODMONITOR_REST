@@ -1,0 +1,47 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+th, td {
+    border: 1px solid black;
+    padding: 5px 10px;
+}
+
+th {
+    background-color: lightgray;
+}
+
+#loading {
+    color: blue;
+    display: none;
+}
+
+#error {
+    color: red;
+    font-weight: bold;
+}
+
+/* Farben für die Warnstufen */
+.NORMAL {
+    background-color: green;
+    color: white;
+}
+
+.WARNING {
+    background-color: orange;
+}
+
+.CRITICAL {
+    background-color: red;
+    color: white;
+}
+
+.UNKNOWN {
+    background-color: gray;
+    color: white;
+}
