@@ -10,6 +10,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.Instant;
@@ -44,6 +45,13 @@ public class GlobalExceptionHandler {
         }
 
         return createResponse(HttpStatus.BAD_REQUEST, message, request);
+    }
+
+    // 401 und 403 - API-Key fehlt oder ist falsch (kommt vom ApiKeyInterceptor)
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ErrorResponse> handleResponseStatus(ResponseStatusException e, HttpServletRequest request) {
+        HttpStatus status = HttpStatus.valueOf(e.getStatusCode().value());
+        return createResponse(status, e.getReason(), request);
     }
 
     // 404 - URL gibt es nicht

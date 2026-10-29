@@ -28,6 +28,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 public class FloodMonitorApiTest {
 
+    private static final String API_KEY = "floodmonitor-demo-key";
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -60,7 +62,7 @@ public class FloodMonitorApiTest {
     // 1. Abruf aller Stationen als JSON
     @Test
     public void getAllStationsAsJson() throws Exception {
-        mockMvc.perform(get("/api/v1/stations").accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/api/v1/stations").header("X-API-KEY", API_KEY).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.length()").value(4))
@@ -70,7 +72,7 @@ public class FloodMonitorApiTest {
     // 2. Abruf aller Stationen als XML
     @Test
     public void getAllStationsAsXml() throws Exception {
-        mockMvc.perform(get("/api/v1/stations").accept(MediaType.APPLICATION_XML))
+        mockMvc.perform(get("/api/v1/stations").header("X-API-KEY", API_KEY).accept(MediaType.APPLICATION_XML))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_XML))
                 .andExpect(xpath("/List/item[1]/id").string("ST-001"));
@@ -79,7 +81,7 @@ public class FloodMonitorApiTest {
     // 3. Abruf einer existierenden Station
     @Test
     public void getExistingStation() throws Exception {
-        mockMvc.perform(get("/api/v1/stations/ST-001"))
+        mockMvc.perform(get("/api/v1/stations/ST-001").header("X-API-KEY", API_KEY))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Wien Reichsbrücke"))
                 .andExpect(jsonPath("$.river").value("Donau"));
@@ -88,7 +90,7 @@ public class FloodMonitorApiTest {
     // 4. Abruf einer unbekannten Station
     @Test
     public void getUnknownStation() throws Exception {
-        mockMvc.perform(get("/api/v1/stations/ST-999"))
+        mockMvc.perform(get("/api/v1/stations/ST-999").header("X-API-KEY", API_KEY))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.message").value("Station ST-999 wurde nicht gefunden"));
@@ -100,7 +102,7 @@ public class FloodMonitorApiTest {
         saveMeasurement("2026-05-01T08:00:00Z", 300);
         saveMeasurement("2026-05-01T09:00:00Z", 320);
 
-        mockMvc.perform(get("/api/v1/stations/ST-001/measurements/latest"))
+        mockMvc.perform(get("/api/v1/stations/ST-001/measurements/latest").header("X-API-KEY", API_KEY))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.waterLevel").value(320.0))
                 .andExpect(jsonPath("$.timestamp").value("2026-05-01T09:00:00Z"));
@@ -115,6 +117,7 @@ public class FloodMonitorApiTest {
 
         // nur 10:00 und 12:00 liegen im Zeitraum
         mockMvc.perform(get("/api/v1/stations/ST-001/measurements")
+                        .header("X-API-KEY", API_KEY)
                         .param("from", "2026-05-01T09:00:00Z")
                         .param("to", "2026-05-01T13:00:00Z"))
                 .andExpect(status().isOk())
@@ -127,6 +130,7 @@ public class FloodMonitorApiTest {
     @Test
     public void invalidTimeRange() throws Exception {
         mockMvc.perform(get("/api/v1/stations/ST-001/measurements")
+                        .header("X-API-KEY", API_KEY)
                         .param("from", "2026-05-01T12:00:00Z")
                         .param("to", "2026-05-01T08:00:00Z"))
                 .andExpect(status().isBadRequest())
@@ -159,7 +163,7 @@ public class FloodMonitorApiTest {
     // 11. Nicht unterstütztes Format
     @Test
     public void unsupportedFormat() throws Exception {
-        mockMvc.perform(get("/api/v1/stations").accept(MediaType.TEXT_PLAIN))
+        mockMvc.perform(get("/api/v1/stations").header("X-API-KEY", API_KEY).accept(MediaType.TEXT_PLAIN))
                 .andExpect(status().isNotAcceptable());
     }
 
@@ -167,12 +171,28 @@ public class FloodMonitorApiTest {
     @Test
     public void maxLimit() throws Exception {
         // 1000 ist genau das Maximum -> erlaubt
-        mockMvc.perform(get("/api/v1/stations/ST-001/measurements").param("limit", "1000"))
+        mockMvc.perform(get("/api/v1/stations/ST-001/measurements").header("X-API-KEY", API_KEY).param("limit", "1000"))
                 .andExpect(status().isOk());
 
         // 1001 ist zu viel -> Fehler
-        mockMvc.perform(get("/api/v1/stations/ST-001/measurements").param("limit", "1001"))
+        mockMvc.perform(get("/api/v1/stations/ST-001/measurements").header("X-API-KEY", API_KEY).param("limit", "1001"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("limit darf maximal 1000 sein"));
+    }
+
+    // 13. ohne API-Key -> 401
+    @Test
+    public void missingApiKey() throws Exception {
+        mockMvc.perform(get("/api/v1/stations"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(401));
+    }
+
+    // 14. falscher API-Key -> 403
+    @Test
+    public void wrongApiKey() throws Exception {
+        mockMvc.perform(get("/api/v1/stations").header("X-API-KEY", "falscher-key"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value(403));
     }
 }

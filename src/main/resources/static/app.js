@@ -1,4 +1,5 @@
 var format = "json";
+var apiKey = "floodmonitor-demo-key";
 
 $(document).ready(function () {
     loadStations();
@@ -24,14 +25,17 @@ $(document).ready(function () {
     }, 10000);
 });
 
-// GET-Anfrage mit Accept-Header je nach Format
+// GET-Anfrage mit Accept-Header je nach Format und API-Key
 function getData(url, callback) {
     $("#loading").show();
 
     $.ajax({
         url: url,
         dataType: format,
-        headers: { "Accept": "application/" + format },
+        headers: {
+            "Accept": "application/" + format,
+            "X-API-KEY": apiKey
+        },
         success: callback,
         error: showError,
         complete: function () {
