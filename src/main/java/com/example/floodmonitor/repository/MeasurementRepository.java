@@ -38,4 +38,9 @@ public class MeasurementRepository {
         }
         return list.get(list.size() - 1);
     }
+
+    // wird für die Tests gebraucht
+    public void deleteAll() {
+        measurements.clear();
+    }
 }
